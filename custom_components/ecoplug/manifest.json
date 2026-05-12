@@ -1,8 +1,8 @@
 {
   "domain": "ecoplug",
   "name": "EcoPlug (WiOn / Workchoice / Woods)",
-  "documentation": "https://github.com/itskevinb/pyecoplug",
-  "issue_tracker": "https://github.com/itskevinb/pyecoplug/issues",
+  "documentation": "https://github.com/itskevinb/hass-ecoplug",
+  "issue_tracker": "https://github.com/itskevinb/hass-ecoplug/issues",
   "dependencies": [],
   "codeowners": ["@itskevinb"],
   "requirements": ["pyecoplug==0.0.5"],

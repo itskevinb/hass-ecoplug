@@ -35,7 +35,7 @@ updated in years and doesn't load on modern HA. This fork:
 
 ### Via HACS (recommended)
 
-1. HACS → ⋮ → Custom repositories → add `https://github.com/itskevinb/pyecoplug` as type **Integration**
+1. HACS → ⋮ → Custom repositories → add `https://github.com/itskevinb/hass-ecoplug` as type **Integration**
 2. Search HACS for "EcoPlug" → Download
 3. Restart Home Assistant
 4. Add to `configuration.yaml`:
