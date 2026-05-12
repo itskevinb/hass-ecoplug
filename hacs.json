@@ -1,0 +1,6 @@
+{
+  "name": "EcoPlug (WiOn / Workchoice / Woods)",
+  "country": "US",
+  "homeassistant": "2023.1.0",
+  "render_readme": true
+}

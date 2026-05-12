@@ -1,8 +1,11 @@
 {
   "domain": "ecoplug",
-  "name": "Ecoplug",
-  "documentation": "https://github.com/gbealmer/pyecoplug/",
+  "name": "EcoPlug (WiOn / Workchoice / Woods)",
+  "documentation": "https://github.com/itskevinb/pyecoplug",
+  "issue_tracker": "https://github.com/itskevinb/pyecoplug/issues",
   "dependencies": [],
-  "codeowners": [],
-  "requirements": ["pyecoplug==0.0.5"]
+  "codeowners": ["@itskevinb"],
+  "requirements": ["pyecoplug==0.0.5"],
+  "version": "0.2.0",
+  "iot_class": "local_polling"
 }
