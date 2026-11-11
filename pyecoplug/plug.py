@@ -139,4 +139,8 @@ class EcoPlug(object):
                 break
             self.stop()
             self._connect()
+        else:
+            # No reply to any of the ten polls: the plug is offline. Raise so
+            # callers can mark it unavailable instead of reporting "off".
+            raise socket.timeout('EcoPlug %r did not answer state poll' % self.name)
         return state[0]
