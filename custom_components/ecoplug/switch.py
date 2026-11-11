@@ -75,7 +75,12 @@ def setup_platform(
 
     def on_add(plug: EcoPlug) -> None:
         display, uid, mac_hex = _identify(plug)
-        if uid in entities:
+        existing = entities.get(uid)
+        if existing is not None:
+            # Re-discovery after prune_stale(): the entity still holds the
+            # stopped EcoPlug with the address it had then. Swap in the fresh
+            # one so a plug that came back on a new DHCP IP is polled there.
+            existing.update_plug(plug)
             return
         switch = EcoPlugSwitch(plug, display, uid, mac_hex)
         entities[uid] = switch
@@ -149,6 +154,23 @@ class EcoPlugSwitch(SwitchEntity):
     def turn_off(self, **kwargs: Any) -> None:
         self._plug.turn_off()
         self._attr_is_on = False
+
+    def update_plug(self, plug: EcoPlug) -> None:
+        """Use a freshly (re)discovered EcoPlug for this entity.
+
+        The old object is not stopped here: an update() may be using it in
+        the executor right now, and its socket times out on its own once
+        nothing calls it. The next poll restores availability.
+        """
+        if plug is self._plug:
+            return
+        _LOGGER.info(
+            "EcoPlug %s rediscovered at %s:%s",
+            self._attr_unique_id,
+            plug.plug_data[-2],
+            plug.plug_data[-1],
+        )
+        self._plug = plug
 
     def mark_unavailable(self) -> None:
         """Called by the discovery loop when a plug stops responding."""
