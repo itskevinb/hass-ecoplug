@@ -1,13 +1,39 @@
+import logging
 import socket
 from datetime import datetime
 import struct, time
 from threading import Thread
 from .plug import EcoPlug
 
+_LOGGER = logging.getLogger(__name__)
+
+# Layout of a plug's discovery reply on UDP 8900 (408 bytes).
+DISCOVERY_FORMAT = '<L6s32s32s32sHHBBLl64s64sH10s12s16s16s16sLLLLH30s18s18sL'
+DISCOVERY_SIZE = struct.calcsize(DISCOVERY_FORMAT)
+
 def normalize_string(x):
     if type(x) == bytes:
         return x.rstrip(b' \t\r\n\0')
     return x
+
+
+def parse_packet(data):
+    """Decode a discovery reply, or return None if it isn't one.
+
+    Anything else that lands on UDP 8900 (other devices, our own broadcast
+    echo, truncated frames) must be ignored: raising here would kill the
+    discovery thread, after which no plug is discovered or pruned again.
+    """
+    if len(data) != DISCOVERY_SIZE:
+        _LOGGER.debug('Ignoring %d-byte datagram on discovery port (want %d)',
+                      len(data), DISCOVERY_SIZE)
+        return None
+    try:
+        pkt = struct.unpack(DISCOVERY_FORMAT, data)
+    except struct.error as err:  # pragma: no cover - size already checked
+        _LOGGER.debug('Ignoring malformed discovery datagram: %s', err)
+        return None
+    return tuple([normalize_string(x) for x in pkt])
 
 class EcoDiscovery(object):
     UDP_PORT = 8900
@@ -90,10 +116,13 @@ class EcoDiscovery(object):
 
             else:
                 try:
-                    data, _ = self.socket.recvfrom(408)
-                    pkt = list(struct.unpack('<L6s32s32s32sHHBBLl64s64sH10s12s16s16s16sLLLLH30s18s18sL', data))
-                    pkt = tuple([normalize_string(x) for x in pkt])
-                    self.process_packet(pkt)
+                    # Read more than one reply's worth so an oversized
+                    # datagram shows up as the wrong size instead of being
+                    # silently truncated to 408 bytes and parsed as garbage.
+                    data, _ = self.socket.recvfrom(2048)
+                    pkt = parse_packet(data)
+                    if pkt is not None:
+                        self.process_packet(pkt)
 
                 except socket.timeout:
                     continue
